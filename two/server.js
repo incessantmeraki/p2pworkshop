@@ -1,7 +1,9 @@
 var net = require('net')
 var streamSet = require('stream-set')
 var jsonStream = require('duplex-json-stream')
+var register = require('register-multicast-dns')
 
+register(process.argv[2])
 var friends = streamSet()
 
 var server = net.createServer(function(socket){
