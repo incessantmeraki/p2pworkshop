@@ -1,11 +1,15 @@
 var net = require('net')
+var jsonStream = require('duplex-json-stream')
 
-var socket = net.connect(8088, 'localhost')
+var socket = jsonStream(net.connect(8088, 'localhost'))
 
 process.stdin.on('data', function(data) {
-	socket.write(data)
+	socket.write({
+    username: process.argv[2],
+    message: data.toString()
+  })
 })
 
 socket.on('data', function(data) {
-	process.stdout.write(data)
+	process.stdout.write(data.username + '>'+ data.message)
 })
