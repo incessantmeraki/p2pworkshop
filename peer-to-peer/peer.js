@@ -7,6 +7,9 @@ var others = process.argv.slice(4)
 
 var t = topology(me, others)
 var connections = streamSet()
+var id = Math.random()
+var seq = 0
+var logs = {}
 
 t.on('connection', function(connection, peer) {
   console.log('connected to ' + peer)
@@ -14,15 +17,24 @@ t.on('connection', function(connection, peer) {
   connections.add(socket)
 
   socket.on('data', function(data) {
-    process.stdout.write(data.username + '>'+ data.message+'\n')
+    if (logs[data.log] >= data.seq) return;
+    logs[data.log] = data.seq
+    process.stdout.write(data.username + '>'+ data.message+'sequence:'+ data.seq+'\n')
+
+    connections.forEach(function(peer) {
+      peer.write(data)
+    })
   })
 })
 
 process.stdin.on('data', function(data) {
+  var next = seq++
   connections.forEach(function (socket) {
     socket.write({
-      username : process.argv[2],
-      message : data.toString().trim()
+      log: id ,
+      seq: seq, 
+      username: process.argv[2],
+      message: data.toString().trim()
     })
   })
 })
